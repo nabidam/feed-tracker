@@ -15,7 +15,7 @@ export default function Home() {
     setMounted(true)
 
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/sw.js").catch((error) => {
+      navigator.serviceWorker.register("/sw").catch((error) => {
         console.error("[v0] Service worker registration failed:", error)
       })
     }
