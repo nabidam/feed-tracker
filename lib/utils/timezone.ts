@@ -23,6 +23,61 @@ export function formatTehranTime(date: Date | string, formatStr: string): string
   return formatTz(dateObj, formatStr, { timeZone: TIMEZONE })
 }
 
+export function formatPersianDate(date: Date | string, options?: Intl.DateTimeFormatOptions): string {
+  const dateObj = typeof date === "string" ? parseISO(date) : date
+  const defaultOptions: Intl.DateTimeFormatOptions = {
+    calendar: "persian",
+    timeZone: TIMEZONE,
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    ...options,
+  }
+  return new Intl.DateTimeFormat("fa-IR", defaultOptions).format(dateObj)
+}
+
+export function formatPersianTime(date: Date | string): string {
+  const dateObj = typeof date === "string" ? parseISO(date) : date
+  return new Intl.DateTimeFormat("fa-IR", {
+    timeZone: TIMEZONE,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(dateObj)
+}
+
+export function formatPersianDateTime(date: Date | string): string {
+  const dateObj = typeof date === "string" ? parseISO(date) : date
+  return new Intl.DateTimeFormat("fa-IR", {
+    calendar: "persian",
+    timeZone: TIMEZONE,
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(dateObj)
+}
+
+export function formatPersianShortDate(date: Date | string): string {
+  const dateObj = typeof date === "string" ? parseISO(date) : date
+  return new Intl.DateTimeFormat("fa-IR", {
+    calendar: "persian",
+    timeZone: TIMEZONE,
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  }).format(dateObj)
+}
+
+export function formatPersianWeekday(date: Date | string): string {
+  const dateObj = typeof date === "string" ? parseISO(date) : date
+  return new Intl.DateTimeFormat("fa-IR", {
+    timeZone: TIMEZONE,
+    weekday: "long",
+  }).format(dateObj)
+}
+
 export function getLast7DaysRange() {
   const now = new Date()
   const tehranNow = getTehranDate(now)

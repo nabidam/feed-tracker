@@ -1,12 +1,14 @@
 {
-  "name": "Baby Feeding Tracker",
-  "short_name": "Feed Tracker",
-  "description": "Track your newborn's feeding schedule",
+  "name": "ردیاب تغذیه نوزاد",
+  "short_name": "ردیاب تغذیه",
+  "description": "برنامه زمان‌بندی تغذیه نوزاد خود را پیگیری کنید",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0a0e1a",
   "theme_color": "#3b82f6",
   "orientation": "portrait",
+  "dir": "rtl",
+  "lang": "fa",
   "icons": [
     {
       "src": "/icon-192.jpg",

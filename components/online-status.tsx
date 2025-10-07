@@ -41,12 +41,12 @@ export function OnlineStatus() {
       {isOnline ? (
         <>
           <Wifi className="h-4 w-4 text-green-500" />
-          <span className="text-muted-foreground">{isSyncing ? "Syncing..." : "Online"}</span>
+          <span className="text-muted-foreground">{isSyncing ? "در حال همگام‌سازی..." : "آنلاین"}</span>
         </>
       ) : (
         <>
           <WifiOff className="h-4 w-4 text-orange-500" />
-          <span className="text-muted-foreground">Offline</span>
+          <span className="text-muted-foreground">آفلاین</span>
         </>
       )}
     </div>

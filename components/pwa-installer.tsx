@@ -38,11 +38,11 @@ export function PWAInstaller() {
     <div className="fixed bottom-4 left-4 right-4 bg-card border border-border rounded-lg p-4 shadow-lg z-50 flex items-center gap-3">
       <Download className="h-5 w-5 text-primary flex-shrink-0" />
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium">Install App</p>
-        <p className="text-xs text-muted-foreground">Add to home screen for quick access</p>
+        <p className="text-sm font-medium">نصب برنامه</p>
+        <p className="text-xs text-muted-foreground">برای دسترسی سریع به صفحه اصلی اضافه کنید</p>
       </div>
       <Button onClick={handleInstall} size="sm">
-        Install
+        نصب
       </Button>
       <Button onClick={() => setShowInstall(false)} size="sm" variant="ghost" className="flex-shrink-0">
         <X className="h-4 w-4" />

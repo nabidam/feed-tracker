@@ -9,9 +9,9 @@ import { addPendingFeeding, addToCachedFeedings } from "@/lib/offline-storage"
 import type { Feeding } from "@/lib/types"
 
 const AMOUNTS = [
-  { value: 30, label: "30ml", color: "bg-accent/20 hover:bg-accent/30 border-accent/40" },
-  { value: 60, label: "60ml", color: "bg-primary/20 hover:bg-primary/30 border-primary/40" },
-  { value: 120, label: "120ml", color: "bg-primary/30 hover:bg-primary/40 border-primary/50" },
+  { value: 30, label: "۳۰ میلی‌لیتر", color: "bg-accent/20 hover:bg-accent/30 border-accent/40" },
+  { value: 60, label: "۶۰ میلی‌لیتر", color: "bg-primary/20 hover:bg-primary/30 border-primary/40" },
+  { value: 120, label: "۱۲۰ میلی‌لیتر", color: "bg-primary/30 hover:bg-primary/40 border-primary/50" },
 ]
 
 export function FeedingForm() {
@@ -41,8 +41,8 @@ export function FeedingForm() {
       window.dispatchEvent(new Event("feedingUpdated"))
 
       toast({
-        title: "Feeding logged (offline)",
-        description: `${amount}ml will sync when online`,
+        title: "تغذیه ثبت شد (آفلاین)",
+        description: `${amount} میلی‌لیتر پس از اتصال به اینترنت همگام‌سازی می‌شود`,
       })
 
       setTimeout(() => setSuccessAmount(null), 1500)
@@ -60,8 +60,8 @@ export function FeedingForm() {
     if (error) {
       console.error("[v0] Error inserting feeding:", error)
       toast({
-        title: "Error",
-        description: "Failed to log feeding. Please try again.",
+        title: "خطا",
+        description: "ثبت تغذیه با خطا مواجه شد. لطفاً دوباره تلاش کنید.",
         variant: "destructive",
       })
       setLoadingAmount(null)
@@ -74,14 +74,15 @@ export function FeedingForm() {
     // Dispatch custom event to update overview
     window.dispatchEvent(new Event("feedingUpdated"))
 
-    // Show success feedback
+    // Show success feedback with Persian time
+    const time = new Date().toLocaleTimeString("fa-IR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    })
+
     toast({
-      title: "Feeding logged",
-      description: `${amount}ml recorded at ${new Date().toLocaleTimeString("en-US", {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      })}`,
+      title: "تغذیه ثبت شد",
+      description: `${amount} میلی‌لیتر در ساعت ${time} ثبت شد`,
     })
 
     setTimeout(() => setSuccessAmount(null), 1500)
@@ -92,7 +93,7 @@ export function FeedingForm() {
       <div className="bg-gradient-to-br from-primary/5 to-accent/5 p-6">
         <div className="mb-6 flex items-center gap-2">
           <Milk className="h-5 w-5 text-primary" />
-          <h2 className="text-lg font-semibold text-card-foreground">Log Feeding</h2>
+          <h2 className="text-lg font-semibold text-card-foreground">ثبت تغذیه</h2>
         </div>
 
         <div className="grid grid-cols-3 gap-3">
@@ -132,15 +133,15 @@ export function FeedingForm() {
                 </div>
 
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-card-foreground">{value}</div>
-                  <div className="text-xs text-muted-foreground">milliliters</div>
+                  <div className="text-2xl font-bold text-card-foreground ltr-numbers">{value}</div>
+                  <div className="text-xs text-muted-foreground">میلی‌لیتر</div>
                 </div>
               </button>
             )
           })}
         </div>
 
-        <p className="mt-4 text-center text-xs text-muted-foreground">Tap a cup to log feeding</p>
+        <p className="mt-4 text-center text-xs text-muted-foreground">برای ثبت تغذیه روی یک لیوان ضربه بزنید</p>
       </div>
     </Card>
   )

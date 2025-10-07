@@ -7,14 +7,14 @@ import { Suspense } from "react"
 import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "Baby Feeding Tracker",
-  description: "Track your newborn's feeding schedule",
+  title: "ردیاب تغذیه نوزاد",
+  description: "برنامه زمان‌بندی تغذیه نوزاد خود را پیگیری کنید",
   generator: "v0.app",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Feed Tracker",
+    title: "ردیاب تغذیه",
   },
   formatDetection: {
     telephone: false,
@@ -31,7 +31,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="fa" dir="rtl">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
         <meta name="theme-color" content="#3b82f6" />

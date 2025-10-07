@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react"
 import { format, eachDayOfInterval, subDays, addDays, isSameDay } from "date-fns"
 import { createClient } from "@/lib/supabase/client"
-import { getTehranDate, getLast7DaysRange, TIMEZONE } from "@/lib/utils/timezone"
+import { getTehranDate, getLast7DaysRange, TIMEZONE, formatPersianShortDate } from "@/lib/utils/timezone"
 
 interface HeatmapData {
   date: string
@@ -160,7 +160,7 @@ export function FeedingHeatmap() {
         </div>
 
         <div className="text-xs text-muted-foreground mb-4">
-          {format(dateRange.startDate, "MMM d")} - {format(dateRange.endDate, "MMM d, yyyy")} ({TIMEZONE})
+          {formatPersianShortDate(dateRange.startDate)} - {formatPersianShortDate(dateRange.endDate)} ({TIMEZONE})
         </div>
 
         {isLoading ? (
@@ -192,7 +192,9 @@ export function FeedingHeatmap() {
               <div className="mt-2 space-y-1">
                 {days.map((day) => (
                   <div key={day.toISOString()} className="flex items-center gap-1">
-                    <div className="w-16 flex-shrink-0 text-xs text-muted-foreground">{format(day, "MMM d")}</div>
+                    <div className="w-16 flex-shrink-0 text-xs text-muted-foreground">
+                      {formatPersianShortDate(day)}
+                    </div>
                     <div className="flex flex-1 gap-1">
                       {hours.map((hour) => {
                         const amount = getHeatmapValue(day, hour)
@@ -208,8 +210,8 @@ export function FeedingHeatmap() {
                             style={{ minWidth: "8px", flex: 1 }}
                             title={
                               amount > 0
-                                ? `${format(day, "MMM d")} ${hour}:00 - ${amount}ml (${data?.count} feeding${data?.count !== 1 ? "s" : ""})`
-                                : `${format(day, "MMM d")} ${hour}:00 - No feedings`
+                                ? `${formatPersianShortDate(day)} ${hour}:00 - ${amount}ml (${data?.count} تغذیه)`
+                                : `${formatPersianShortDate(day)} ${hour}:00 - بدون تغذیه`
                             }
                           />
                         )

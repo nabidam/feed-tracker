@@ -35,8 +35,8 @@ export default function Home() {
               <Baby className="h-5 w-5 text-primary" />
             </div>
             <div className="flex-1">
-              <h1 className="text-lg font-semibold text-foreground">Baby Feeding</h1>
-              <p className="text-xs text-muted-foreground">Track every feeding</p>
+              <h1 className="text-lg font-semibold text-foreground">تغذیه نوزاد</h1>
+              <p className="text-xs text-muted-foreground">پیگیری هر وعده غذایی</p>
             </div>
             <OnlineStatus />
           </div>

@@ -6,7 +6,7 @@ import { BarChart3, Calendar, Droplets, Clock, X, Loader2 } from "lucide-react"
 import { format, parseISO } from "date-fns"
 import { useToast } from "@/hooks/use-toast"
 import { createClient } from "@/lib/supabase/client"
-import { getTehranDate, getTehranStartOfDay, formatTehranTime } from "@/lib/utils/timezone"
+import { getTehranDate, getTehranStartOfDay, formatPersianTime, formatPersianShortDate } from "@/lib/utils/timezone"
 import type { Feeding } from "@/lib/types"
 import { getCachedFeedings, addPendingFeeding, removeFromCachedFeedings } from "@/lib/offline-storage"
 
@@ -150,16 +150,16 @@ export function FeedingOverview() {
     const tehranDate = getTehranDate(date)
 
     if (format(tehranDate, "yyyy-MM-dd") === format(getTehranStartOfDay(tehranNow), "yyyy-MM-dd")) {
-      return "Today"
+      return "امروز" // Today in Persian
     }
 
     const yesterday = new Date(tehranNow)
     yesterday.setDate(yesterday.getDate() - 1)
     if (format(tehranDate, "yyyy-MM-dd") === format(getTehranStartOfDay(yesterday), "yyyy-MM-dd")) {
-      return "Yesterday"
+      return "دیروز" // Yesterday in Persian
     }
 
-    return format(tehranDate, "MMM d, yyyy")
+    return formatPersianShortDate(tehranDate)
   }
 
   const tehranNow = getTehranDate(new Date())
@@ -173,7 +173,8 @@ export function FeedingOverview() {
           <div className="p-6">
             <div className="mb-4 flex items-center gap-2">
               <BarChart3 className="h-5 w-5 text-primary" />
-              <h2 className="text-lg font-semibold text-card-foreground">{"Today's Total"}</h2>
+              <h2 className="text-lg font-semibold text-card-foreground">{"امروز کل"}</h2>{" "}
+              {/* Today's Total in Persian */}
             </div>
 
             <div className="flex items-end gap-2">
@@ -184,11 +185,11 @@ export function FeedingOverview() {
             <div className="mt-4 flex items-center gap-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-1.5">
                 <Droplets className="h-4 w-4" />
-                <span>{todayTotal.count} feedings</span>
+                <span>{todayTotal.count} تغذیه‌ها</span> {/* Feedings in Persian */}
               </div>
               <div className="flex items-center gap-1.5">
                 <Clock className="h-4 w-4" />
-                <span>Avg {Math.round(todayTotal.total / todayTotal.count)}ml</span>
+                <span>میانگین {Math.round(todayTotal.total / todayTotal.count)}ml</span> {/* Average in Persian */}
               </div>
             </div>
           </div>
@@ -199,14 +200,16 @@ export function FeedingOverview() {
         <div className="p-6">
           <div className="mb-4 flex items-center gap-2">
             <Calendar className="h-5 w-5 text-primary" />
-            <h2 className="text-lg font-semibold text-card-foreground">History</h2>
+            <h2 className="text-lg font-semibold text-card-foreground">تاریخچه</h2> {/* History in Persian */}
           </div>
 
           {dailyTotals.length === 0 ? (
             <div className="py-12 text-center">
               <Droplets className="mx-auto h-12 w-12 text-muted-foreground/30" />
-              <p className="mt-4 text-sm text-muted-foreground">No feedings logged yet</p>
-              <p className="mt-1 text-xs text-muted-foreground">Tap a cup above to start tracking</p>
+              <p className="mt-4 text-sm text-muted-foreground">هنوز تغذیه‌ای ثبت نشده است</p>{" "}
+              {/* No feedings logged yet in Persian */}
+              <p className="mt-1 text-xs text-muted-foreground">بر روی یک میز بالا کلیک کنید تا ردیابی شروع کنید</p>{" "}
+              {/* Tap a cup above to start tracking in Persian */}
             </div>
           ) : (
             <div className="space-y-3">
@@ -219,7 +222,7 @@ export function FeedingOverview() {
                     <div>
                       <div className="font-semibold text-card-foreground">{getDateLabel(day.date)}</div>
                       <div className="mt-1 text-xs text-muted-foreground">
-                        {day.count} feeding{day.count !== 1 ? "s" : ""}
+                        {day.count} تغذیه‌{day.count !== 1 ? "ها" : ""} {/* Feedings in Persian */}
                       </div>
                     </div>
                     <div className="text-right">
@@ -241,9 +244,7 @@ export function FeedingOverview() {
                           `}
                         >
                           <span className="font-medium text-card-foreground">{entry.amount}ml</span>
-                          <span className="ml-1.5 text-muted-foreground">
-                            {formatTehranTime(entry.created_at, "h:mm a")}
-                          </span>
+                          <span className="ml-1.5 text-muted-foreground">{formatPersianTime(entry.created_at)}</span>
                           <button
                             onClick={() => handleDeleteEntry(entry.id)}
                             disabled={isDeleting}

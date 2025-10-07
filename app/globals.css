@@ -121,4 +121,16 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* RTL-specific styles for proper text direction */
+  [dir="rtl"] {
+    direction: rtl;
+    text-align: right;
+  }
+
+  /* Ensure proper number display in RTL context */
+  [dir="rtl"] .ltr-numbers {
+    direction: ltr;
+    display: inline-block;
+  }
 }
