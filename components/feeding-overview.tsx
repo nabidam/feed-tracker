@@ -5,31 +5,41 @@ import { Card } from "@/components/ui/card"
 import { BarChart3, Calendar, Droplets, Clock, X } from "lucide-react"
 import { format, startOfDay, isToday, isYesterday, parseISO } from "date-fns"
 import { useToast } from "@/hooks/use-toast"
-
-interface FeedingEntry {
-  id: string
-  amount: number
-  timestamp: string
-}
+import { createClient } from "@/lib/supabase/client"
+import type { Feeding } from "@/lib/types"
 
 interface DailyTotal {
   date: string
   total: number
   count: number
-  entries: FeedingEntry[]
+  entries: Feeding[]
 }
 
 export function FeedingOverview() {
   const [dailyTotals, setDailyTotals] = useState<DailyTotal[]>([])
   const { toast } = useToast()
 
-  const loadFeedingData = () => {
-    const existingEntries = localStorage.getItem("feedingEntries")
-    const entries: FeedingEntry[] = existingEntries ? JSON.parse(existingEntries) : []
+  const loadFeedingData = async () => {
+    const supabase = createClient()
+
+    const { data: entries, error } = await supabase
+      .from("feedings")
+      .select("*")
+      .order("created_at", { ascending: false })
+
+    if (error) {
+      console.error("[v0] Error loading feedings:", error)
+      return
+    }
+
+    if (!entries) {
+      setDailyTotals([])
+      return
+    }
 
     const grouped = entries.reduce(
       (acc, entry) => {
-        const date = format(startOfDay(parseISO(entry.timestamp)), "yyyy-MM-dd")
+        const date = format(startOfDay(parseISO(entry.created_at)), "yyyy-MM-dd")
 
         if (!acc[date]) {
           acc[date] = {
@@ -54,12 +64,20 @@ export function FeedingOverview() {
     setDailyTotals(totals)
   }
 
-  const handleDeleteEntry = (entryId: string) => {
-    const existingEntries = localStorage.getItem("feedingEntries")
-    const entries: FeedingEntry[] = existingEntries ? JSON.parse(existingEntries) : []
+  const handleDeleteEntry = async (entryId: string) => {
+    const supabase = createClient()
 
-    const filteredEntries = entries.filter((entry) => entry.id !== entryId)
-    localStorage.setItem("feedingEntries", JSON.stringify(filteredEntries))
+    const { error } = await supabase.from("feedings").delete().eq("id", entryId)
+
+    if (error) {
+      console.error("[v0] Error deleting feeding:", error)
+      toast({
+        title: "Error",
+        description: "Failed to delete entry. Please try again.",
+        variant: "destructive",
+      })
+      return
+    }
 
     loadFeedingData()
     window.dispatchEvent(new Event("feedingUpdated"))
@@ -159,7 +177,7 @@ export function FeedingOverview() {
                       >
                         <span className="font-medium text-card-foreground">{entry.amount}ml</span>
                         <span className="ml-1.5 text-muted-foreground">
-                          {format(parseISO(entry.timestamp), "h:mm a")}
+                          {format(parseISO(entry.created_at), "h:mm a")}
                         </span>
                         <button
                           onClick={() => handleDeleteEntry(entry.id)}

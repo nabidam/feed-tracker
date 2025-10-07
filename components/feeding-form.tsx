@@ -4,12 +4,7 @@ import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Milk, Check } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-
-interface FeedingEntry {
-  id: string
-  amount: number
-  timestamp: string
-}
+import { createClient } from "@/lib/supabase/client"
 
 const AMOUNTS = [
   { value: 30, label: "30ml", color: "bg-accent/20 hover:bg-accent/30 border-accent/40" },
@@ -21,22 +16,26 @@ export function FeedingForm() {
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null)
   const { toast } = useToast()
 
-  const handleFeedingLog = (amount: number) => {
+  const handleFeedingLog = async (amount: number) => {
     setSelectedAmount(amount)
 
-    const entry: FeedingEntry = {
-      id: crypto.randomUUID(),
+    const supabase = createClient()
+
+    const { error } = await supabase.from("feedings").insert({
       amount,
-      timestamp: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+    })
+
+    if (error) {
+      console.error("[v0] Error inserting feeding:", error)
+      toast({
+        title: "Error",
+        description: "Failed to log feeding. Please try again.",
+        variant: "destructive",
+      })
+      setSelectedAmount(null)
+      return
     }
-
-    // Get existing entries
-    const existingEntries = localStorage.getItem("feedingEntries")
-    const entries: FeedingEntry[] = existingEntries ? JSON.parse(existingEntries) : []
-
-    // Add new entry
-    entries.push(entry)
-    localStorage.setItem("feedingEntries", JSON.stringify(entries))
 
     // Dispatch custom event to update overview
     window.dispatchEvent(new Event("feedingUpdated"))
