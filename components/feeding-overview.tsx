@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
-import { BarChart3, Calendar, Droplets, Clock, X } from "lucide-react"
-import { format, startOfDay, isToday, isYesterday, parseISO } from "date-fns"
+import { BarChart3, Calendar, Droplets, Clock, X, Loader2 } from "lucide-react"
+import { format, parseISO } from "date-fns"
 import { useToast } from "@/hooks/use-toast"
 import { createClient } from "@/lib/supabase/client"
+import { getTehranDate, getTehranStartOfDay, formatTehranTime } from "@/lib/utils/timezone"
 import type { Feeding } from "@/lib/types"
+import { getCachedFeedings, addPendingFeeding, removeFromCachedFeedings } from "@/lib/offline-storage"
 
 interface DailyTotal {
   date: string
@@ -17,29 +19,41 @@ interface DailyTotal {
 
 export function FeedingOverview() {
   const [dailyTotals, setDailyTotals] = useState<DailyTotal[]>([])
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const { toast } = useToast()
 
   const loadFeedingData = async () => {
-    const supabase = createClient()
-
-    const { data: entries, error } = await supabase
-      .from("feedings")
-      .select("*")
-      .order("created_at", { ascending: false })
-
-    if (error) {
-      console.error("[v0] Error loading feedings:", error)
+    if (!navigator.onLine) {
+      // Load from cache when offline
+      const cachedEntries = getCachedFeedings()
+      processEntries(cachedEntries)
       return
     }
 
-    if (!entries) {
+    const supabase = createClient()
+
+    const { data: entries, error } = await supabase.from("feedings").select("*").order("fed_at", { ascending: false })
+
+    if (error) {
+      console.error("[v0] Error loading feedings:", error)
+      const cachedEntries = getCachedFeedings()
+      processEntries(cachedEntries)
+      return
+    }
+
+    processEntries(entries || [])
+  }
+
+  const processEntries = (entries: Feeding[]) => {
+    if (!entries || entries.length === 0) {
       setDailyTotals([])
       return
     }
 
     const grouped = entries.reduce(
       (acc, entry) => {
-        const date = format(startOfDay(parseISO(entry.created_at)), "yyyy-MM-dd")
+        const tehranDate = getTehranDate(entry.fed_at || entry.created_at)
+        const date = format(getTehranStartOfDay(tehranDate), "yyyy-MM-dd")
 
         if (!acc[date]) {
           acc[date] = {
@@ -65,6 +79,31 @@ export function FeedingOverview() {
   }
 
   const handleDeleteEntry = async (entryId: string) => {
+    if (deletingId) return
+
+    setDeletingId(entryId)
+
+    if (!navigator.onLine) {
+      const entry = dailyTotals.flatMap((d) => d.entries).find((e) => e.id === entryId)
+
+      if (entry) {
+        await addPendingFeeding(entry, "delete")
+        removeFromCachedFeedings(entryId)
+      }
+
+      setTimeout(() => {
+        loadFeedingData()
+        window.dispatchEvent(new Event("feedingUpdated"))
+        setDeletingId(null)
+
+        toast({
+          title: "Entry removed (offline)",
+          description: "Will sync when online",
+        })
+      }, 300)
+      return
+    }
+
     const supabase = createClient()
 
     const { error } = await supabase.from("feedings").delete().eq("id", entryId)
@@ -76,16 +115,20 @@ export function FeedingOverview() {
         description: "Failed to delete entry. Please try again.",
         variant: "destructive",
       })
+      setDeletingId(null)
       return
     }
 
-    loadFeedingData()
-    window.dispatchEvent(new Event("feedingUpdated"))
+    setTimeout(() => {
+      loadFeedingData()
+      window.dispatchEvent(new Event("feedingUpdated"))
+      setDeletingId(null)
 
-    toast({
-      title: "Entry removed",
-      description: "Feeding entry has been deleted",
-    })
+      toast({
+        title: "Entry removed",
+        description: "Feeding entry has been deleted",
+      })
+    }, 300)
   }
 
   useEffect(() => {
@@ -100,12 +143,25 @@ export function FeedingOverview() {
 
   const getDateLabel = (dateString: string) => {
     const date = parseISO(dateString)
-    if (isToday(date)) return "Today"
-    if (isYesterday(date)) return "Yesterday"
-    return format(date, "MMM d, yyyy")
+    const tehranNow = getTehranDate(new Date())
+    const tehranDate = getTehranDate(date)
+
+    if (format(tehranDate, "yyyy-MM-dd") === format(getTehranStartOfDay(tehranNow), "yyyy-MM-dd")) {
+      return "Today"
+    }
+
+    const yesterday = new Date(tehranNow)
+    yesterday.setDate(yesterday.getDate() - 1)
+    if (format(tehranDate, "yyyy-MM-dd") === format(getTehranStartOfDay(yesterday), "yyyy-MM-dd")) {
+      return "Yesterday"
+    }
+
+    return format(tehranDate, "MMM d, yyyy")
   }
 
-  const todayTotal = dailyTotals.find((d) => isToday(parseISO(d.date)))
+  const tehranNow = getTehranDate(new Date())
+  const todayKey = format(getTehranStartOfDay(tehranNow), "yyyy-MM-dd")
+  const todayTotal = dailyTotals.find((d) => d.date === todayKey)
 
   return (
     <div className="space-y-4">
@@ -114,7 +170,7 @@ export function FeedingOverview() {
           <div className="p-6">
             <div className="mb-4 flex items-center gap-2">
               <BarChart3 className="h-5 w-5 text-primary" />
-              <h2 className="text-lg font-semibold text-card-foreground">Today's Total</h2>
+              <h2 className="text-lg font-semibold text-card-foreground">{"Today's Total"}</h2>
             </div>
 
             <div className="flex items-end gap-2">
@@ -170,24 +226,36 @@ export function FeedingOverview() {
                   </div>
 
                   <div className="mt-3 flex flex-wrap gap-2">
-                    {day.entries.map((entry) => (
-                      <div
-                        key={entry.id}
-                        className="group relative rounded-lg bg-background/50 px-3 py-1.5 text-xs transition-all hover:bg-background/70"
-                      >
-                        <span className="font-medium text-card-foreground">{entry.amount}ml</span>
-                        <span className="ml-1.5 text-muted-foreground">
-                          {format(parseISO(entry.created_at), "h:mm a")}
-                        </span>
-                        <button
-                          onClick={() => handleDeleteEntry(entry.id)}
-                          className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground opacity-0 transition-opacity group-hover:opacity-100"
-                          aria-label="Delete entry"
+                    {day.entries.map((entry) => {
+                      const isDeleting = deletingId === entry.id
+
+                      return (
+                        <div
+                          key={entry.id}
+                          className={`
+                            group relative rounded-lg bg-background/50 px-3 py-1.5 text-xs transition-all
+                            ${isDeleting ? "opacity-50 scale-95" : "hover:bg-background/70"}
+                          `}
                         >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </div>
-                    ))}
+                          <span className="font-medium text-card-foreground">{entry.amount}ml</span>
+                          <span className="ml-1.5 text-muted-foreground">
+                            {formatTehranTime(entry.created_at, "h:mm a")}
+                          </span>
+                          <button
+                            onClick={() => handleDeleteEntry(entry.id)}
+                            disabled={isDeleting}
+                            className={`
+                              absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full 
+                              bg-destructive text-destructive-foreground transition-all
+                              ${isDeleting ? "opacity-100" : "opacity-0 group-hover:opacity-100"}
+                            `}
+                            aria-label="Delete entry"
+                          >
+                            {isDeleting ? <Loader2 className="h-3 w-3 animate-spin" /> : <X className="h-3 w-3" />}
+                          </button>
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
               ))}

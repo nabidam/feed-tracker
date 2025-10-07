@@ -3,6 +3,9 @@
 import { useState, useEffect } from "react"
 import { FeedingForm } from "@/components/feeding-form"
 import { FeedingOverview } from "@/components/feeding-overview"
+import { FeedingHeatmap } from "@/components/feeding-heatmap"
+import { PWAInstaller } from "@/components/pwa-installer"
+import { OnlineStatus } from "@/components/online-status"
 import { Baby } from "lucide-react"
 
 export default function Home() {
@@ -10,6 +13,12 @@ export default function Home() {
 
   useEffect(() => {
     setMounted(true)
+
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js").catch((error) => {
+        console.error("[v0] Service worker registration failed:", error)
+      })
+    }
   }, [])
 
   if (!mounted) {
@@ -25,19 +34,23 @@ export default function Home() {
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
               <Baby className="h-5 w-5 text-primary" />
             </div>
-            <div>
+            <div className="flex-1">
               <h1 className="text-lg font-semibold text-foreground">Baby Feeding</h1>
               <p className="text-xs text-muted-foreground">Track every feeding</p>
             </div>
+            <OnlineStatus />
           </div>
         </header>
 
         {/* Main Content */}
         <div className="space-y-6 p-6">
           <FeedingForm />
+          <FeedingHeatmap />
           <FeedingOverview />
         </div>
       </div>
+
+      <PWAInstaller />
     </main>
   )
 }
