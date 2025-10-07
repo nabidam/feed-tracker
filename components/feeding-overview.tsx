@@ -32,7 +32,10 @@ export function FeedingOverview() {
 
     const supabase = createClient()
 
-    const { data: entries, error } = await supabase.from("feedings").select("*").order("fed_at", { ascending: false })
+    const { data: entries, error } = await supabase
+      .from("feedings")
+      .select("*")
+      .order("created_at", { ascending: false })
 
     if (error) {
       console.error("[v0] Error loading feedings:", error)
@@ -52,7 +55,7 @@ export function FeedingOverview() {
 
     const grouped = entries.reduce(
       (acc, entry) => {
-        const tehranDate = getTehranDate(entry.fed_at || entry.created_at)
+        const tehranDate = getTehranDate(entry.created_at)
         const date = format(getTehranStartOfDay(tehranDate), "yyyy-MM-dd")
 
         if (!acc[date]) {

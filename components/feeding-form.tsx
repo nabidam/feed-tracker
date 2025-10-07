@@ -28,7 +28,6 @@ export function FeedingForm() {
       id: crypto.randomUUID(),
       amount,
       created_at: new Date().toISOString(),
-      fed_at: new Date().toISOString(),
     }
 
     if (!navigator.onLine) {
@@ -55,7 +54,7 @@ export function FeedingForm() {
     const { error } = await supabase.from("feedings").insert({
       id: feeding.id,
       amount: feeding.amount,
-      fed_at: feeding.fed_at,
+      created_at: feeding.created_at,
     })
 
     if (error) {

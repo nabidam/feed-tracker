@@ -24,7 +24,7 @@ export class SyncManager {
             const { error } = await this.supabase.from("feedings").insert({
               id: item.id,
               amount: item.amount,
-              fed_at: item.fed_at,
+              created_at: item.created_at,
             })
 
             if (!error) {
@@ -57,7 +57,7 @@ export class SyncManager {
     if (!navigator.onLine) return
 
     try {
-      const { data, error } = await this.supabase.from("feedings").select("*").order("fed_at", { ascending: false })
+      const { data, error } = await this.supabase.from("feedings").select("*").order("created_at", { ascending: false })
 
       if (!error && data) {
         setCachedFeedings(data as Feeding[])
