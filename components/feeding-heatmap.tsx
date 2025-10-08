@@ -129,12 +129,18 @@ export function FeedingHeatmap() {
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Calendar className="h-5 w-5 text-primary" />
-            <h2 className="text-lg font-semibold text-card-foreground">Feeding Heatmap</h2>
+            <h2 className="text-lg font-semibold text-card-foreground">آمار تغذیه</h2>
           </div>
 
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={handlePreviousWeek} className="h-8 w-8 p-0 bg-transparent">
-              <ChevronLeft className="h-4 w-4" />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleNextWeek}
+              disabled={isCurrentWeek}
+              className="h-8 w-8 p-0 bg-transparent"
+            >
+              <ChevronRight className="h-4 w-4" />
             </Button>
 
             <Button
@@ -144,17 +150,11 @@ export function FeedingHeatmap() {
               disabled={isCurrentWeek}
               className="h-8 px-3 text-xs bg-transparent"
             >
-              Today
+              امروز
             </Button>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleNextWeek}
-              disabled={isCurrentWeek}
-              className="h-8 w-8 p-0 bg-transparent"
-            >
-              <ChevronRight className="h-4 w-4" />
+            
+            <Button variant="outline" size="sm" onClick={handlePreviousWeek} className="h-8 w-8 p-0 bg-transparent">
+              <ChevronLeft className="h-4 w-4" />
             </Button>
           </div>
         </div>
@@ -223,7 +223,7 @@ export function FeedingHeatmap() {
 
               {/* Legend */}
               <div className="mt-4 flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                <span>Less</span>
+                <span>کمتر</span>
                 <div className="flex gap-1">
                   <div className="h-3 w-3 rounded bg-muted/20" />
                   <div className="h-3 w-3 rounded bg-primary/20" />
@@ -231,7 +231,7 @@ export function FeedingHeatmap() {
                   <div className="h-3 w-3 rounded bg-primary/60" />
                   <div className="h-3 w-3 rounded bg-primary/80" />
                 </div>
-                <span>More</span>
+                <span>بیشتر</span>
               </div>
             </div>
           </div>
